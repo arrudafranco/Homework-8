@@ -17,12 +17,24 @@ library(gapminder)
 library(dplyr)
 library(geonames)
 library(countrycode)
+library(ggplot2)
 #install.packages("geonames")
 #install.packages("here")
 gapminder <- data.frame(gapminder)
 #key <- getOption("geonamesUsername")
 countryInfo <- data.frame(GNcountryInfo())
 countryJoin <- countrycode(countryInfo[, 13], origin = 'iso2c', destination = 'country.name')
-countryInfo <- mutate(countryInfo, countryJoin)
-gapminder_density <- left_join(gapminder, countryInfo)
+countryInfo <- mutate(countryInfo, country = countryJoin)
+gapminder_density <- left_join(gapminder, countryInfo, by = "country") %>%
+  mutate(popDensity = pop / as.numeric(areaInSqKm))
+ggplot(gapminder_density, aes(x = popDensity, y = lifeExp)) +
+  geom_jitter(alpha = 0.1) +
+  geom_smooth() +
+  labs(x = "Population density (inhabitants per Sq Km)", y = "Average life expectancy", title = "Life Expectancy by Population Density")
+ggplot(gapminder_density, aes(x = popDensity, y = lifeExp)) +
+  geom_jitter(alpha = 0.1) +
+  facet_wrap(~ continent.x) +
+  geom_smooth()
+gapminder_density_mod <- lm(lifeExp ~ popDensity, data = gapminder_density)
+summary(gapminder_density_mod)
 ```
