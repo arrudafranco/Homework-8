@@ -1,6 +1,6 @@
 ---
 title: "Effect of Population Density on Life Expectancy"
-author: "YOUR NAME"
+author: "Gustavo Arruda Franco"
 date: "`r lubridate::today()`"
 output: github_document
 ---
@@ -10,4 +10,19 @@ output: github_document
 
 ```{r, echo = TRUE}
 devtools::session_info()
+```
+
+```{r}
+library(gapminder)
+library(dplyr)
+library(geonames)
+library(countrycode)
+#install.packages("geonames")
+#install.packages("here")
+gapminder <- data.frame(gapminder)
+#key <- getOption("geonamesUsername")
+countryInfo <- data.frame(GNcountryInfo())
+countryJoin <- countrycode(countryInfo[, 13], origin = 'iso2c', destination = 'country.name')
+countryInfo <- mutate(countryInfo, countryJoin)
+gapminder_density <- left_join(gapminder, countryInfo)
 ```
