@@ -10,18 +10,19 @@ output: github_document
 
 ```{r, echo = TRUE}
 devtools::session_info()
-```
-
-```{r}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 library(gapminder)
 library(dplyr)
 library(geonames)
 library(countrycode)
 library(ggplot2)
-#install.packages("geonames")
-#install.packages("here")
+library(ggthemes)
+theme_set(theme_fivethirtyeight())
+```
+
+```{r}
 gapminder <- data.frame(gapminder)
-#key <- getOption("geonamesUsername")
+key <- getOption("geonamesUsername")
 countryInfo <- data.frame(GNcountryInfo())
 countryJoin <- countrycode(countryInfo[, 13], origin = 'iso2c', destination = 'country.name')
 countryInfo <- mutate(countryInfo, country = countryJoin)

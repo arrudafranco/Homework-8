@@ -1,0 +1,62 @@
+---
+title: "Evangelical Front in the Brazilian Congress"
+author: "Gustavo Arruda"
+date: "`r lubridate::today()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(readr)
+theme_set(theme_fivethirtyeight())
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r scrape}
+
+#The following code extracts a table from the Brazilian House of Representatives website. The table contains information of all the representatives that officially participate in the Congressional Evangelical Front.
+
+congress <- read_html("https://www.camara.leg.br/internet/deputado/frenteDetalhe.asp?id=54010") %>%
+  html_table(fill = TRUE)
+
+#The following code cleans and tidies the aforementioned table. It also reads another table I created based on this article (https://congressoemfoco.uol.com.br/legislativo/direita-cresce-e-engole-o-centro-no-congresso-mais-fragmentado-da-historia/), cleans it and join it to the former one. The second table contains the ideological inclination of each Brazilian party.
+
+bancada_evangelica <- congress[[1]][-1,] %>%
+  head(-1)
+Partidos_Ideologias_TIDY <- read_csv("Partidos & Ideologias_TIDY.csv")
+Ideologia_key <- c(esquerda = "Left", centro = "Center", direita = "Right")
+Partidos_Ideologias_TIDY <- mutate(Partidos_Ideologias_TIDY, Ideologia = ifelse(is.na(Ideologia), "esquerda", Ideologia)) %>%
+    rename(Partido = Nome) %>%
+  mutate(Ideologia = recode(Ideologia, 
+                            !!!Ideologia_key),
+         Partido = toupper(Partido)) %>%
+  rename(Ideology = Ideologia)
+
+bancada_ideology <- left_join(bancada_evangelica, Partidos_Ideologias_TIDY)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r plots, echo=FALSE}
+ggplot(bancada_ideology) +
+  geom_bar(aes(x = Partido, fill = Ideology)) +
+  coord_flip()
+ggplot(bancada_ideology) +
+  geom_bar(aes(x = UF)) +
+  coord_flip()
+ggplot(bancada_ideology) +
+  geom_bar(aes(x = Ideology))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
