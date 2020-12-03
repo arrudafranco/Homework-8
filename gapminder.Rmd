@@ -6,11 +6,10 @@ output: github_document
 ---
 
 
-## Session info
+## Settings
 
-```{r, echo = TRUE}
-devtools::session_info()
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```{r global_options}
+knitr::opts_chunk$set(echo = TRUE, warnings = FALSE, message = FALSE)
 library(gapminder)
 library(dplyr)
 library(geonames)
@@ -20,7 +19,11 @@ library(ggthemes)
 theme_set(theme_fivethirtyeight())
 ```
 
-```{r}
+## Code
+
+The following code retrieves the relevant dataframes from a R library and an API, then tidies and joins them.
+
+```{r data}
 gapminder <- data.frame(gapminder)
 key <- getOption("geonamesUsername")
 countryInfo <- data.frame(GNcountryInfo())
@@ -28,6 +31,11 @@ countryJoin <- countrycode(countryInfo[, 13], origin = 'iso2c', destination = 'c
 countryInfo <- mutate(countryInfo, country = countryJoin)
 gapminder_density <- left_join(gapminder, countryInfo, by = "country") %>%
   mutate(popDensity = pop / as.numeric(areaInSqKm))
+```
+
+## Analysis
+
+```{r analysis}
 ggplot(gapminder_density, aes(x = popDensity, y = lifeExp)) +
   geom_jitter(alpha = 0.1) +
   geom_smooth() +
@@ -38,4 +46,12 @@ ggplot(gapminder_density, aes(x = popDensity, y = lifeExp)) +
   geom_smooth()
 gapminder_density_mod <- lm(lifeExp ~ popDensity, data = gapminder_density)
 summary(gapminder_density_mod)
+```
+
+From the "Life Expectancy by Population Density" chart and the linear regression model coefficients, we can see there is a small but strong correlation between population density and life expectancy. However, most of the observations are clustered vertically at the beginning of the low density scale. When we probe deeper by faceting the observations by continent, we see that there is a sharp increase, a valley, then another sharp increase in Europe, Americas and Africa. Asia looks different, with no valleys and a much longer tail of increasing population density. Oceania shows no visible correlation.
+
+## Session info
+
+```{r session_info}
+devtools::session_info()
 ```

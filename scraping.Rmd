@@ -15,20 +15,15 @@ library(readr)
 theme_set(theme_fivethirtyeight())
 ```
 
-## R Markdown
+## Code
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+The following code extracts a table from the Brazilian House of Representatives website. The table contains information of all the representatives that officially participate in the Congressional Evangelical Front. Then, the code cleans and tidies the aforementioned table.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+It also reads a dataframe I created based on this [article](https://congressoemfoco.uol.com.br/legislativo/direita-cresce-e-engole-o-centro-no-congresso-mais-fragmentado-da-historia/), cleans it and joins it to the former one. The dataframe contains the ideological inclination of each Brazilian party.
 
 ```{r scrape}
-
-#The following code extracts a table from the Brazilian House of Representatives website. The table contains information of all the representatives that officially participate in the Congressional Evangelical Front.
-
 congress <- read_html("https://www.camara.leg.br/internet/deputado/frenteDetalhe.asp?id=54010") %>%
   html_table(fill = TRUE)
-
-#The following code cleans and tidies the aforementioned table. It also reads another table I created based on this article (https://congressoemfoco.uol.com.br/legislativo/direita-cresce-e-engole-o-centro-no-congresso-mais-fragmentado-da-historia/), cleans it and join it to the former one. The second table contains the ideological inclination of each Brazilian party.
 
 bancada_evangelica <- congress[[1]][-1,] %>%
   head(-1)
@@ -44,19 +39,27 @@ Partidos_Ideologias_TIDY <- mutate(Partidos_Ideologias_TIDY, Ideologia = ifelse(
 bancada_ideology <- left_join(bancada_evangelica, Partidos_Ideologias_TIDY)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
+## Analysis
 
 ```{r plots, echo=FALSE}
 ggplot(bancada_ideology) +
   geom_bar(aes(x = Partido, fill = Ideology)) +
-  coord_flip()
+  coord_flip() +
+  labs(title = "Number of Representatives by Party", x = "# of Representatives",
+       y = "Party")
+
 ggplot(bancada_ideology) +
   geom_bar(aes(x = UF)) +
-  coord_flip()
+  coord_flip() +
+  labs(title = "Number of Representatives by State", x = "# of Representatives",
+       y = "States")
+
 ggplot(bancada_ideology) +
-  geom_bar(aes(x = Ideology))
+  geom_bar(aes(x = Ideology)) +
+  labs(title = "Number of Representatives by Ideology", x = "Ideological Alignment",
+       y = "# of Representatives")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The Evangelical Front is a formal multi-partisan and multi-denominational association in the Brazilian Congress. From the graphs, it is clear that the Brazilian Evangelical representatives are largely associated with right-wing parties. Most of the highly represented parties are associated with the center and center-right, known more for physiological inclinations than for clearer ideological alignment in their policies. REPUBLICANOS, PSD, PP, PL, MDB are all part of that group. REPUBLICANOS is a special case, because the party was also founded by Neo-Pentecostal leadership of the second-largest denomination in Brazil (IURD). PSL was a former physiological center-right turned to a extreme right-wing party during Bolsonaro's 2018 campaign.
+
+In terms of state representation, the graph mostly follows the most populous states. A interesting outlier is the state of Para (PA), which has much more Evangelical representatives than similarly populated states (SC, PE, CE). That might be because of the huge influence the Assemblies of God has in that state, since that's where their first missionaries took root. The Assemblies of God is the largest denomination in Brazil.
