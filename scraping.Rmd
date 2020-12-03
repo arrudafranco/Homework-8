@@ -2,7 +2,7 @@
 title: "Evangelical Front in the Brazilian Congress"
 author: "Gustavo Arruda"
 date: "`r lubridate::today()`"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
